@@ -1,0 +1,153 @@
+.visualization {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.viz-header {
+  padding: 16px 16px 0;
+  flex-shrink: 0;
+}
+
+.viz-header h5 {
+  margin: 0 0 4px !important;
+}
+
+.viz-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viz-tabs-wrapper {
+  flex: 1;
+  padding: 8px 16px 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.viz-tabs-wrapper .ant-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 图表内容区纵向滚动（固定标题 + Tab 栏，下方可滑） */
+.viz-tabs-wrapper .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.viz-tabs-wrapper .ant-tabs-content-holder::-webkit-scrollbar {
+  width: 8px;
+}
+
+.viz-tabs-wrapper .ant-tabs-content-holder::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.viz-tabs-wrapper .ant-tabs-content-holder::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+}
+
+.viz-tabs-wrapper .ant-tabs-content-holder::-webkit-scrollbar-thumb:hover {
+  background: #8c8c8c;
+}
+
+.viz-tabs-wrapper .ant-tabs-content {
+  min-height: min-content;
+  overflow: visible;
+}
+
+.viz-tabs-wrapper .ant-tabs-tabpane {
+  min-height: min-content;
+}
+
+.viz-tabs-wrapper .ant-tabs-nav {
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+/* SQL + triple charts */
+.viz-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+/* SQL panel */
+.viz-sql-panel {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.viz-sql-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background: #f0f5ff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.viz-sql-code {
+  max-height: 120px;
+  overflow: auto;
+}
+
+.viz-sql-code pre {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* 三种图纵向排列 */
+.viz-triple-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.viz-chart-block {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background: #fafafa;
+  padding: 10px 12px 12px;
+}
+
+.viz-chart-block__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #262626;
+}
+
+.viz-chart-block__label .anticon {
+  color: #1677ff;
+}
+
+.viz-chart-block__canvas {
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.chart-renderer {
+  width: 100%;
+}

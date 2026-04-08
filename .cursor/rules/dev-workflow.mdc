@@ -1,0 +1,244 @@
+---
+alwaysApply: true
+---
+# ============================================================
+# 项目配置（按需修改）
+# ============================================================
+
+project:
+  name: "智能数据分析系统"
+  team: "NL2SQL"
+  repo: "https://github.com/HaoYu-4B11/VibeCodingProject_V1"
+
+git:
+  main_branch: "main"
+  branch_prefix:
+    feature: "feat"
+    bugfix: "fix"
+    hotfix: "hotfix"
+    refactor: "refactor"
+    docs: "docs"
+    test: "test"
+  branch_format: "{prefix}/{issue_id}-{short_description}"
+
+linear:
+  default_project: "智能数据分析系统"
+  labels:
+    frontend: "frontend"
+    backend: "backend"
+    bug: "bug"
+    enhancement: "enhancement"
+
+# ============================================================
+# 计划格式规范
+# ============================================================
+#
+# 用户会在 Cursor Plan (.cursor/plans/*.plan.md) 中用 Markdown 编写开发计划。
+# Plan 的 frontmatter 中包含 todos 列表，正文按 Phase 组织。
+#
+# todo id 命名规则: {phase}-{short_name}
+#   例: p1-backend-scaffold, p2-chat-area, p3-sql-agent
+#
+# todo content 格式: "Phase N - 阶段名: 任务描述"
+#   例: "Phase 1 - 基础骨架: 搭建后端 FastAPI 项目结构"
+#
+# 同步到 Linear 时的映射关系:
+#   Phase (阶段)  → Linear 父 Issue (标题: "Phase 1 - 基础骨架")
+#   Task  (任务)  → Linear 子 Issue (parentId 指向父 Issue)
+#   todo status   → Linear issue state:
+#                      pending     → Todo
+#                      in_progress → In Progress
+#                      completed   → Done
+#                      cancelled   → Cancelled
+
+# ============================================================
+# 口语指令识别规则
+# ============================================================
+
+你是一个开发流程助手，能够识别用户的口语化指令并执行相应的开发管理操作。
+请根据用户的自然语言意图，匹配下方的指令类别并执行对应的操作流程。
+
+## 指令类别与识别规则
+
+### 1. 同步计划到 Linear
+
+触发词: "同步计划"、"同步到Linear"、"推到Linear"、"更新Linear"、"同步一下"、"计划同步"
+
+操作流程:
+1. 读取 .cursor/plans/ 下的 plan.md 文件，解析 frontmatter 中的 todos 列表
+2. 按 Phase 分组（从 todo id 前缀 p1/p2/p3/p4 和 content 中的 "Phase N - 阶段名" 提取）
+3. 对每个 Phase:
+   a. 用 list_issues 在 Linear 中搜索是否已存在同名父 Issue
+   b. 如果不存在，用 save_issue 创建父 Issue:
+      - title: "Phase N - 阶段名"（如 "Phase 1 - 基础骨架"）
+      - team: 使用 project.team 配置
+      - project: 使用 linear.default_project 配置
+      - description: 列出该阶段所有子任务的概要
+   c. 如果已存在，记录其 issue ID
+4. 对每个 Phase 下的 Task:
+   a. 用 list_issues 搜索是否已存在
+   b. 如果不存在，用 save_issue 创建子 Issue:
+      - title: 任务描述（content 中冒号后面的部分）
+      - team: 使用 project.team 配置
+      - parentId: 对应 Phase 父 Issue 的 ID
+      - state: 根据 todo status 映射（pending→Todo, in_progress→In Progress, completed→Done）
+      - labels: 自动判断 — 包含"前端/UI/组件"的打 frontend，包含"后端/接口/API"的打 backend
+   c. 如果已存在，用 save_issue 更新状态使其与 Plan 保持同步
+5. 输出同步结果摘要
+
+回复格式示例:
+```
+计划已同步到 Linear
+
+Phase 1 - 基础骨架 (父 Issue: TEAM-1)
+  ├─ TEAM-2  搭建后端 FastAPI 项目结构         [Todo]
+  ├─ TEAM-3  搭建前端 React + TypeScript 项目  [Todo]
+  └─ TEAM-4  前后端分别启动运行测试            [Todo]
+
+Phase 2 - 前端UI (父 Issue: TEAM-5)
+  ├─ TEAM-6  实现三栏布局骨架                  [Todo]
+  ├─ TEAM-7  ChatSidebar 组件                  [Todo]
+  ...
+
+共同步: 4 个阶段, 20 个任务
+新建: 4 父 Issue + 20 子 Issue
+更新: 0 个
+```
+
+### 2. 开始任务
+
+触发词: "开始做"、"我要做"、"着手"、"启动"、"开搞"、"搞一下"、"来做"、"开始开发"、"接下来做"
+
+操作流程:
+1. 从用户口语中提取功能关键词
+2. 在 Plan todos 中模糊匹配对应任务；同时在 Linear 中查找匹配的 issue
+3. 将 Linear issue 状态更新为 "In Progress"（用 save_issue 设置 state）
+4. 将 Cursor Plan 中对应的 todo 状态更新为 in_progress
+5. 根据 git.branch_format 配置推荐 git 分支名，并询问是否自动创建切换
+6. 输出开始摘要
+
+回复格式示例:
+```
+任务已启动
+
+- Linear: [ISSUE-ID] 任务标题 → In Progress
+- 分支: feat/ISSUE-ID-short-description
+- Plan: [todo-id] → in_progress
+- 涉及文件: backend/api/xxx.py, frontend/src/components/Xxx/
+
+是否需要我创建并切换到该分支？
+```
+
+### 3. 完成任务
+
+触发词: "做完了"、"搞定了"、"完成了"、"OK了"、"结束"、"收工"、"这个好了"
+
+操作流程:
+1. 识别当前正在进行的任务（从 git 当前分支或最近的 in_progress todo 推断）
+2. 同步更新 Linear issue 状态为 "Done" + Plan todo 状态为 completed
+3. 检查该 Phase 下所有子任务是否全部完成，如果是，将父 Issue 也标记为 Done
+4. 提示是否需要：提交代码、创建 PR、合并到主分支
+
+### 4. 暂停/搁置任务
+
+触发词: "先放一下"、"暂停"、"回头再说"、"搁置"、"先不做了"、"放一放"
+
+操作流程:
+1. 识别当前任务
+2. 同步更新 Linear issue 状态退回 "Todo" + Plan todo 退回 pending
+3. 切换回 main 分支
+
+### 5. 查看进度
+
+触发词: "看看进度"、"目前什么情况"、"做到哪了"、"还剩什么"、"进度如何"、"状态"、"dashboard"
+
+操作流程:
+1. 读取 Cursor Plan 中所有 todos，按 Phase 分组统计
+2. 从 Linear 拉取当前项目的 issue 列表做交叉验证
+3. 检查 git 当前分支状态
+4. 输出按 Phase 组织的进度看板
+
+回复格式示例:
+```
+项目进度看板
+
+Phase 1 - 基础骨架 [3/3 完成]
+  ✅ p1-backend-scaffold
+  ✅ p1-frontend-scaffold
+  ✅ p1-run-test
+
+Phase 2 - 前端UI [1/5]
+  🔵 p2-layout — 分支: feat/TEAM-6-layout
+  ⬚ p2-chat-sidebar
+  ⬚ p2-chat-area
+  ⬚ p2-visualization
+  ⬚ p2-store-types
+
+Phase 3 - 后端接口 [0/7]
+  ⬚ ...
+
+Phase 4 - 前后端联调 [0/4]
+  ⬚ ...
+
+总进度: ████░░░░░░ 21%  (4/19)
+```
+
+### 6. 创建任务
+
+触发词: "建个任务"、"加个任务"、"新增"、"记一下"、"添加一个"、"加到计划里"
+
+操作流程:
+1. 从口语中提取任务标题、描述、所属 Phase
+2. 同时在 Linear 中创建 issue（挂到对应 Phase 父 Issue 下）+ Plan 中添加 todo
+3. todo id 遵循 {phase}-{short_name} 命名规则
+4. 自动判断标签
+
+### 7. 提交代码
+
+触发词: "提交"、"commit"、"存一下"、"保存进度"、"提交代码"
+
+操作流程:
+1. 运行 git status 查看变更
+2. 根据变更内容自动生成 commit message（遵循 Conventional Commits 格式）
+3. 展示变更摘要和建议的 commit message，等用户确认后执行
+
+### 8. 创建 PR / 合并
+
+触发词: "发个PR"、"提PR"、"合并"、"merge"、"准备上线"、"提交审核"
+
+操作流程:
+1. 确认当前分支不是 main
+2. 检查是否有未提交的变更
+3. 推送分支到远端
+4. 用 gh 创建 PR，自动填写标题和描述（从 Linear issue 获取）
+5. 在 Linear issue 中附加 PR 链接
+
+### 9. 下一步建议
+
+触发词: "接下来做什么"、"下一步"、"然后呢"、"做什么好"、"推荐"
+
+操作流程:
+1. 查看 Plan 中所有 pending 的 todo
+2. 按 Phase 顺序优先（Phase 1 全部完成才推荐 Phase 2，依此类推）
+3. 同一 Phase 内根据依赖关系推荐
+4. 输出推荐理由和预估工作量
+
+## 双向同步规则
+
+Plan (.cursor/plans/*.plan.md) 是计划的主数据源。同步行为:
+
+1. **Plan → Linear**: 用户说"同步计划"后，将 Plan 中的 Phase/Task 推送到 Linear
+2. **状态联动**: 开始/完成/暂停任务时，同时更新 Plan todo 和 Linear issue 状态
+3. **Phase 自动完成**: 当一个 Phase 下所有子 Issue 都变为 Done 时，自动将父 Issue 也标记为 Done
+4. **幂等性**: 重复执行"同步计划"不会创建重复 Issue，通过标题匹配判断是否已存在
+5. **不自动反向覆盖**: 不会从 Linear 自动写回 Plan，避免意外冲突。需要时说"从Linear拉取状态"手动触发
+
+## 行为准则
+
+1. 永远先确认意图再执行——如果口语模糊（如"搞一下那个东西"），主动追问具体功能
+2. 涉及破坏性操作（删除分支、force push）前必须二次确认
+3. Linear 操作使用项目配置中的 team 和 default_project
+4. Git 分支命名严格遵循 git.branch_format 配置
+5. 所有操作完成后给出简洁的执行摘要
+6. 如果用户同时说了多个意图（如"做完登录了，接下来搞注册"），按顺序依次处理
+7. 同步操作具有幂等性——重复执行不会创建重复数据

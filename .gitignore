@@ -1,0 +1,68 @@
+# ========== 环境与密钥（勿提交） ==========
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ========== Python（backend） ==========
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
+# ========== Node / 前端 ==========
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+.turbo
+*.tsbuildinfo
+
+# ========== 日志与临时文件 ==========
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ========== 本地数据与缓存 ==========
+*.db
+*.sqlite
+*.sqlite3
+.cache/
+
+# ========== 操作系统 ==========
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ========== 编辑器 / IDE ==========
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
