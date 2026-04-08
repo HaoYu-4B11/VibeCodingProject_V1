@@ -91,4 +91,4 @@ npm run dev
 
 ## 仓库信息
 
-远程仓库（示例）：`https://github.com/HaoYu-4B11/VibeCodingProject_V1`
+远程仓库：`https://github.com/HaoYu-4B11/VibeCodingProject_V1`
